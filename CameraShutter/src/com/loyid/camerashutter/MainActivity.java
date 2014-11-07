@@ -46,6 +46,9 @@ public class MainActivity extends ActionBarActivity {
 	private RadioGroup mRadioGroup = null;
 	private int mMode = MODE_CAMERA;
 	
+	private AcceptThread mAcceptThread = null;
+	private ConnectedThread mConnectedThread = null;
+	
 	private static final int MSG_HANDLE_READ = 0;
 	private Handler mHandler = new Handler() {
 		@Override
@@ -170,7 +173,9 @@ public class MainActivity extends ActionBarActivity {
 	private void startShutterServer() {
 		Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
 		discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-		startActivity(discoverableIntent);	
+		startActivity(discoverableIntent);
+		mAcceptThread = new AcceptThread();
+		mAcceptThread.start();
 	}
 
 	@Override
@@ -227,7 +232,8 @@ public class MainActivity extends ActionBarActivity {
 	}
 	
 	private void manageConnectedSocket(BluetoothSocket socket) {
-		
+		mConnectedThread = new ConnectedThread(socket);
+		mConnectedThread.start();
 	}
 	
 	private class ConnectedThread extends Thread {
