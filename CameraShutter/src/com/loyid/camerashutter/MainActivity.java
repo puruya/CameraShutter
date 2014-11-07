@@ -1,8 +1,13 @@
 package com.loyid.camerashutter;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.UUID;
 
 import android.support.v7.app.ActionBarActivity;
@@ -227,35 +232,36 @@ public class MainActivity extends ActionBarActivity {
 	
 	private class ConnectedThread extends Thread {
 		private final BluetoothSocket mmSocket;
-		private final InputStream mmInStream;
-		private final OutputStream mmOutStream;
+		private final PrintWriter mmPrintWriter;
+		private final BufferedReader mmBufferedReader;
 
 		public ConnectedThread(BluetoothSocket socket) {
 			mmSocket = socket;
-			InputStream tmpIn = null;
-			OutputStream tmpOut = null;
+			BufferedReader tmpIn = null;
+			PrintWriter tmpOut = null;
 
 			// Get the input and output streams, using temp objects because
 			// member streams are final
 			try {
-				tmpIn = socket.getInputStream();
-				tmpOut = socket.getOutputStream();
+				tmpIn = new BufferedReader(
+	                    new InputStreamReader(socket.getInputStream()));
+				tmpOut = new PrintWriter(
+						new BufferedWriter(new OutputStreamWriter(
+								socket.getOutputStream())), true);
+				
 			} catch (IOException e) { }
 
-			mmInStream = tmpIn;
-			mmOutStream = tmpOut;
+			mmBufferedReader = tmpIn;
+			mmPrintWriter = tmpOut;
+			
 		}
 
 		public void run() {
-			byte[] buffer = new byte[1024];  // buffer store for the stream
-			int bytes; // bytes returned from read()
-
 			// Keep listening to the InputStream until an exception occurs
 			while (true) {
 				try {
 					// Read from the InputStream
-					bytes = mmInStream.read(buffer);
-					String receivedString = new String(buffer);
+					String receivedString = mmBufferedReader.readLine();
 					// Send the obtained bytes to the UI activity
 					mHandler.obtainMessage(MSG_HANDLE_READ, receivedString).sendToTarget();
 				} catch (IOException e) {
@@ -265,10 +271,8 @@ public class MainActivity extends ActionBarActivity {
 		}
 
 		/* Call this from the main activity to send data to the remote device */
-		public void write(byte[] bytes) {
-			try {
-				mmOutStream.write(bytes);
-			} catch (IOException e) { }
+		public void write(String msg) {
+			mmPrintWriter.println(msg);
 		}
 
 		/* Call this from the main activity to shutdown the connection */
