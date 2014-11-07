@@ -1,0 +1,109 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.loyid.camerashutter.MainActivity" >
+
+    <TextView
+        android:id="@+id/label_bluetooth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/btn_toggle"
+        android:layout_alignBottom="@+id/btn_toggle"
+        android:layout_marginLeft="14dp"
+        android:text="@string/label_bluetooth"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <ToggleButton
+        android:id="@+id/btn_toggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"        
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="14dp"/>
+    
+    
+    <RadioGroup
+        android:id="@+id/radio_gruop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/btn_toggle" >
+
+        <RadioButton
+            android:id="@+id/radio_camera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/label_camera" />
+
+        <RadioButton
+            android:id="@+id/radio_shutter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_shutter" />
+
+    </RadioGroup>
+        
+    <LinearLayout
+        android:id="@+id/camera_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"       
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/radio_gruop">
+	
+	    <Button
+	        android:id="@+id/btn_start"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"	        
+	        android:onClick="onButtonClick"
+	        android:text="@string/btn_label_start" />
+	
+	    <Button
+	        android:id="@+id/btn_stop"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onButtonClick"
+	        android:text="@string/btn_label_stop" />
+	    
+    </LinearLayout>
+    
+    <LinearLayout
+        android:id="@+id/shutter_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/camera_content">
+	    
+	    <Button
+	        android:id="@+id/btn_discovery"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onButtonClick"
+	        android:text="@string/btn_label_discovery" />
+	
+	    <Button
+	        android:id="@+id/btn_focus"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onButtonClick"
+	        android:text="@string/btn_label_focus" />
+	
+	    <Button
+	        android:id="@+id/btn_shutter"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onButtonClick"
+	        android:text="@string/btn_label_shutter" />
+
+    </LinearLayout>
+
+</RelativeLayout>
