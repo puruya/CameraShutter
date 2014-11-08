@@ -8,16 +8,22 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Set;
 import java.util.UUID;
 
 import android.support.v7.app.ActionBarActivity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -49,6 +55,8 @@ public class MainActivity extends ActionBarActivity {
 	private AcceptThread mAcceptThread = null;
 	private ConnectedThread mConnectedThread = null;
 	
+	private boolean mInDiscoverying = false;
+
 	private static final int MSG_HANDLE_READ = 0;
 	private Handler mHandler = new Handler() {
 		@Override
@@ -56,6 +64,30 @@ public class MainActivity extends ActionBarActivity {
 			switch(msg.what) {
 			case MSG_HANDLE_READ:
 				break;
+			}
+		}
+	};
+
+	private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+				ParcelUuid[] uuids = device.getUuids();
+				if (uuids != null) {
+					for (ParcelUuid uuid : uuids) {
+						Log.d(TAG, "deviceName = " + device.getName() + "(" + device.getAddress() + ") : uuid = " + uuid);
+					}
+				}
+				mBluetoothAdapter.cancelDiscovery();
+				device.fetchUuidsWithSdp();
+				Log.d(TAG, "deviceName = " + device.getName() + "(" + device.getAddress() + ")");
+				uuids = device.getUuids();
+				if (uuids != null) {
+					for (ParcelUuid uuid : uuids) {
+						Log.d(TAG, "deviceName = " + device.getName() + "(" + device.getAddress() + ") : uuid = " + uuid);
+					}
+				}
 			}
 		}
 	};
@@ -142,7 +174,7 @@ public class MainActivity extends ActionBarActivity {
 		mRadioGroup.check(R.id.radio_camera);
 	}
 	
-	private void onButtonClick(View view) {
+	public void onButtonClick(View view) {
 		cancelDiscovery();
 			
 		int id = view.getId();
@@ -171,6 +203,10 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void startShutterServer() {
+		if (mMode != MODE_CAMERA) {
+			Log.d(TAG, "It's not in the camera mode.");
+			return;
+		}
 		Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
 		discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
 		startActivity(discoverableIntent);
@@ -188,10 +224,32 @@ public class MainActivity extends ActionBarActivity {
 	}
 	
 	private void startDiscovery() {
+		// Register the BroadcastReceiver
+		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+		registerReceiver(mReceiver, filter);
+
+		mInDiscoverying = true;
+
+		Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+		// If there are paired devices
+		if (pairedDevices.size() > 0) {
+			// Loop through paired devices
+			for (BluetoothDevice device : pairedDevices) {
+				// Add the name and address to an array adapter to show in a ListView
+				ParcelUuid[] uuids = device.getUuids();
+				for (ParcelUuid uuid : uuids) {
+					Log.d(TAG, "deviceName = " + device.getName() + "(" + device.getAddress() + ") : uuid = " + uuid);
+				}
+			}
+		}
+
 		mBluetoothAdapter.startDiscovery();
 	}
 	
 	private void cancelDiscovery() {
+		if (mInDiscoverying)
+			unregisterReceiver(mReceiver);
+		mInDiscoverying = false;
 		mBluetoothAdapter.cancelDiscovery();
 	}
 	
